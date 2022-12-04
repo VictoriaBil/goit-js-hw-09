@@ -9,6 +9,7 @@ const minutesField = document.querySelector('[data-minutes]');
 const secondsField = document.querySelector('[data-seconds]');
 
 startBtn.addEventListener('click', onStart);
+startBtn.disabled = true;
 
 const options = {
   enableTime: true,
@@ -16,22 +17,37 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    console.log(selectedDates[0]);
+    onCloseInput(selectedDates);
   },
 };
 
-flatpickr(inputDate, options);
+const fp = flatpickr(inputDate, options);
 
 let timerId = null;
 
 function onStart() {
-  const selectedDate = flatpickr(inputDate, options).selectedDates[0];
+  const selectedDate = fp.selectedDates[0];
+  inputDate.disabled = true;
+  startBtn.disabled = true;
 
   timerId = setInterval(() => {
     const currentDate = Date.now();
     const currentTime = selectedDate - currentDate;
     updateClockFace(convertMs(currentTime));
+
+    if (currentTime <= 0) {
+      clearInterval(timerId);
+      return;
+    }
   }, 1000);
+}
+
+function onCloseInput(selectedDates) {
+  if (selectedDates[0] > Date.now()) {
+    startBtn.disabled = false;
+  } else {
+    window.alert('Please choose a date in the future');
+  }
 }
 
 function convertMs(ms) {
